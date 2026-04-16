@@ -36,7 +36,9 @@ The system exposes REST API endpoints and supports authentication, pagination, l
 - Logging
 - Unit Tests
 
----
+## Frontend Integration
+
+The system was developed with a REST API architecture, making it easy to integrate with frontend technologies such as React, Angular or internal admin dashboards. This allows the backend to serve as a scalable foundation for future full-stack expansion.
 
 ## Technologies Used
 
