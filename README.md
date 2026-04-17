@@ -23,35 +23,47 @@ A full-stack logistics management system for managing trucks, drivers and jobs.
 - `frontend/` - Angular frontend
 - `docker-compose.yml` - Docker setup for backend and database
 
-## How to Run
+## API Endpoints
+- `/api/login/`
+- `/api/trucks/`
+- `/api/drivers/`
+- `/api/jobs/`
 
-### Backend
-
-```bash
-docker compose up
-
- Backend runs on
- http://127.0.0.1:8000
-
- ###Frontend 
- cd frontend
- ng serve
-
- Frontend runs on :
- http://localhost:4200
-
- API Endpoints
-	•	/api/login/
-	•	/api/trucks/
-	•	/api/drivers/
-	•	/api/jobs/
-
-Login Access
+## Login Access
 
 Create an admin account:
+
+```bash
+docker compose exec django_app python manage.py createsuperuser
+Then use those credentials to log in 
+
+## Setup Instructions
+
+### 1. Clone Repository
+
+```bash
+git clone https://github.com/Audjasmine/haulage-truck-system.git
+cd haulage-truck-system
+
+### Start Backend 
+docker compose up --build
+
+Backend runs on
+ http://127.0.0.1:8000
+
+Create Admin User
 docker compose exec django_app python manage.py createsuperuser
 
-Then use those credentials to log in 
+###Start Frontend 
+cd frontend
+npm install
+ng serve
+
+ 
+Frontend runs on :
+ http://localhost:4200
+
+
 
 Author
 Audrey Katandika
