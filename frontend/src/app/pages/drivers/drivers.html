@@ -1,0 +1,131 @@
+<h2 class="text-3xl font-bold mb-6">Drivers Management</h2>
+
+<div class="grid lg:grid-cols-3 gap-6">
+  <div class="lg:col-span-1 bg-white rounded-2xl shadow p-6">
+    <h3 class="text-xl font-semibold mb-4">
+      {{ editingDriverId ? 'Edit Driver' : 'Add Driver' }}
+    </h3>
+
+    <div *ngIf="errorMessage()" class="mb-4 rounded-lg bg-red-100 text-red-700 px-4 py-3">
+      {{ errorMessage() }}
+    </div>
+
+    <div *ngIf="successMessage()" class="mb-4 rounded-lg bg-green-100 text-green-700 px-4 py-3">
+      {{ successMessage() }}
+    </div>
+
+    <form (ngSubmit)="submitDriver()" class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium mb-1">Driver ID</label>
+        <input
+          type="text"
+          [(ngModel)]="driverForm.driver_id"
+          name="driver_id"
+          class="w-full border rounded-lg px-3 py-2"
+          required
+        />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Name</label>
+        <input
+          type="text"
+          [(ngModel)]="driverForm.name"
+          name="name"
+          class="w-full border rounded-lg px-3 py-2"
+          required
+        />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">License Number</label>
+        <input
+          type="text"
+          [(ngModel)]="driverForm.license_number"
+          name="license_number"
+          class="w-full border rounded-lg px-3 py-2"
+          required
+        />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Phone Number</label>
+        <input
+          type="text"
+          [(ngModel)]="driverForm.phone_number"
+          name="phone_number"
+          class="w-full border rounded-lg px-3 py-2"
+          required
+        />
+      </div>
+
+      <div class="flex gap-3">
+        <button
+          type="submit"
+          class="bg-slate-900 text-white px-4 py-2 rounded-lg hover:bg-slate-800"
+        >
+          {{ editingDriverId ? 'Update Driver' : 'Add Driver' }}
+        </button>
+
+        <button
+          type="button"
+          (click)="resetForm()"
+          class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300"
+        >
+          Clear
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <div class="lg:col-span-2 bg-white rounded-2xl shadow p-6 overflow-x-auto">
+    <h3 class="text-xl font-semibold mb-4">Driver List</h3>
+
+    <div *ngIf="isLoading()" class="mb-4 rounded-lg bg-gray-100 text-gray-600 px-4 py-3">
+      Loading drivers...
+    </div>
+
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b text-left">
+          <th class="py-3 pr-3">Driver ID</th>
+          <th class="py-3 pr-3">Name</th>
+          <th class="py-3 pr-3">License Number</th>
+          <th class="py-3 pr-3">Phone Number</th>
+          <th class="py-3 pr-3">Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let driver of drivers()" class="border-b align-top">
+          <td class="py-3 pr-3">{{ driver.driver_id }}</td>
+          <td class="py-3 pr-3">{{ driver.name }}</td>
+          <td class="py-3 pr-3">{{ driver.license_number }}</td>
+          <td class="py-3 pr-3">{{ driver.phone_number }}</td>
+          <td class="py-3 pr-3">
+            <div class="flex gap-2 flex-wrap">
+              <button
+                (click)="editDriver(driver)"
+                class="bg-blue-100 text-blue-700 px-3 py-1 rounded-lg hover:bg-blue-200 text-sm"
+              >
+                Edit
+              </button>
+              <button
+                (click)="deleteDriver(driver.id)"
+                class="bg-red-100 text-red-700 px-3 py-1 rounded-lg hover:bg-red-200 text-sm"
+              >
+                Delete
+              </button>
+            </div>
+          </td>
+        </tr>
+
+        <tr *ngIf="!isLoading() && drivers().length === 0">
+          <td colspan="5" class="py-6 text-center text-gray-500">
+            No drivers found.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

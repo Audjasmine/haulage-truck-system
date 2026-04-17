@@ -1,0 +1,137 @@
+<h2 class="text-3xl font-bold mb-6">Trucks Management</h2>
+
+<div class="grid lg:grid-cols-3 gap-6">
+  <div class="lg:col-span-1 bg-white rounded-2xl shadow p-6">
+    <h3 class="text-xl font-semibold mb-4">
+      {{ editingTruckId ? 'Edit Truck' : 'Add Truck' }}
+    </h3>
+
+    <div *ngIf="errorMessage()" class="mb-4 rounded-lg bg-red-100 text-red-700 px-4 py-3">
+      {{ errorMessage() }}
+    </div>
+
+    <div *ngIf="successMessage()" class="mb-4 rounded-lg bg-green-100 text-green-700 px-4 py-3">
+      {{ successMessage() }}
+    </div>
+
+    <form (ngSubmit)="submitTruck()" class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium mb-1">Truck ID</label>
+        <input
+          type="text"
+          [(ngModel)]="truckForm.truck_id"
+          name="truck_id"
+          class="w-full border rounded-lg px-3 py-2"
+          required
+        />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Registration Number</label>
+        <input
+          type="text"
+          [(ngModel)]="truckForm.registration_number"
+          name="registration_number"
+          class="w-full border rounded-lg px-3 py-2"
+          required
+        />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Capacity</label>
+        <input
+          type="text"
+          [(ngModel)]="truckForm.capacity"
+          name="capacity"
+          class="w-full border rounded-lg px-3 py-2"
+          required
+        />
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium mb-1">Status</label>
+        <select
+          [(ngModel)]="truckForm.status"
+          name="status"
+          class="w-full border rounded-lg px-3 py-2"
+        >
+          <option value="available">Available</option>
+          <option value="in_transit">In Transit</option>
+          <option value="maintenance">Maintenance</option>
+        </select>
+      </div>
+
+      <div class="flex gap-3">
+        <button
+          type="submit"
+          class="bg-slate-900 text-white px-4 py-2 rounded-lg hover:bg-slate-800"
+        >
+          {{ editingTruckId ? 'Update Truck' : 'Add Truck' }}
+        </button>
+
+        <button
+          type="button"
+          (click)="resetForm()"
+          class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300"
+        >
+          Clear
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <div class="lg:col-span-2 bg-white rounded-2xl shadow p-6 overflow-x-auto">
+    <h3 class="text-xl font-semibold mb-4">Truck List</h3>
+
+    <div *ngIf="isLoading()" class="mb-4 rounded-lg bg-gray-100 text-gray-600 px-4 py-3">
+      Loading trucks...
+    </div>
+
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b text-left">
+          <th class="py-3 pr-3">Truck ID</th>
+          <th class="py-3 pr-3">Registration Number</th>
+          <th class="py-3 pr-3">Capacity</th>
+          <th class="py-3 pr-3">Status</th>
+          <th class="py-3 pr-3">Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let truck of trucks()" class="border-b align-top">
+          <td class="py-3 pr-3">{{ truck.truck_id }}</td>
+          <td class="py-3 pr-3">{{ truck.registration_number }}</td>
+          <td class="py-3 pr-3">{{ truck.capacity }}</td>
+          <td class="py-3 pr-3">
+            <span class="px-3 py-1 rounded-full text-xs font-medium" [ngClass]="getStatusClass(truck.status)">
+              {{ truck.status }}
+            </span>
+          </td>
+          <td class="py-3 pr-3">
+            <div class="flex gap-2 flex-wrap">
+              <button
+                (click)="editTruck(truck)"
+                class="bg-blue-100 text-blue-700 px-3 py-1 rounded-lg hover:bg-blue-200 text-sm"
+              >
+                Edit
+              </button>
+              <button
+                (click)="deleteTruck(truck.id)"
+                class="bg-red-100 text-red-700 px-3 py-1 rounded-lg hover:bg-red-200 text-sm"
+              >
+                Delete
+              </button>
+            </div>
+          </td>
+        </tr>
+
+        <tr *ngIf="!isLoading() && trucks().length === 0">
+          <td colspan="5" class="py-6 text-center text-gray-500">
+            No trucks found.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

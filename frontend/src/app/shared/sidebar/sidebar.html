@@ -1,0 +1,42 @@
+<aside class="w-64 bg-slate-900 text-white min-h-screen p-6 flex flex-col justify-between">
+  <div>
+    <h1 class="text-2xl font-bold mb-8">Haulage System</h1>
+
+    <nav class="space-y-3">
+      <button
+        (click)="goTo('/dashboard')"
+        class="w-full text-left px-4 py-2 rounded-lg hover:bg-slate-700 text-base"
+      >
+        Dashboard
+      </button>
+
+      <button
+        (click)="goTo('/trucks')"
+        class="w-full text-left px-4 py-2 rounded-lg hover:bg-slate-700 text-base"
+      >
+        Trucks
+      </button>
+
+      <button
+        (click)="goTo('/drivers')"
+        class="w-full text-left px-4 py-2 rounded-lg hover:bg-slate-700 text-base"
+      >
+        Drivers
+      </button>
+
+      <button
+        (click)="goTo('/jobs')"
+        class="w-full text-left px-4 py-2 rounded-lg hover:bg-slate-700 text-base"
+      >
+        Jobs
+      </button>
+    </nav>
+  </div>
+
+  <button
+    (click)="logout()"
+    class="mt-8 w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg"
+  >
+    Logout
+  </button>
+</aside>

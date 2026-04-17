@@ -1,0 +1,10 @@
+<div class="flex h-screen">
+  <!-- Sidebar - only show when NOT on login page -->
+  <app-sidebar *ngIf="!(router.url === '/login')"></app-sidebar>
+  
+  <div class="flex-1 overflow-auto" [class.bg-gray-100]="!(router.url === '/login')">
+    <div class="p-6">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>
