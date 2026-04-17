@@ -1,7 +1,15 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
+
+type DriverRecord = {
+  id: number;
+  driver_id: string;
+  name: string;
+  license_number: string;
+  phone_number: string;
+};
 
 @Component({
   selector: 'app-drivers',
@@ -11,7 +19,7 @@ import { ApiService } from '../../core/services/api.service';
   styleUrl: './drivers.css'
 })
 export class Drivers implements OnInit {
-  drivers = signal<any[]>([]);
+  drivers = signal<DriverRecord[]>([]);
   isLoading = signal(false);
 
   driverForm = {
@@ -24,6 +32,8 @@ export class Drivers implements OnInit {
   editingDriverId: number | null = null;
   errorMessage = signal('');
   successMessage = signal('');
+
+  driverCount = computed(() => this.drivers().length);
 
   constructor(private api: ApiService) {}
 
@@ -83,7 +93,7 @@ export class Drivers implements OnInit {
     }
   }
 
-  editDriver(driver: any): void {
+  editDriver(driver: DriverRecord): void {
     this.editingDriverId = driver.id;
     this.driverForm = {
       driver_id: driver.driver_id,
@@ -91,6 +101,8 @@ export class Drivers implements OnInit {
       license_number: driver.license_number,
       phone_number: driver.phone_number
     };
+    this.errorMessage.set('');
+    this.successMessage.set('');
   }
 
   deleteDriver(id: number): void {

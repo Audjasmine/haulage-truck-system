@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
@@ -29,6 +29,12 @@ export class Jobs implements OnInit {
   editingJobId: number | null = null;
   errorMessage = signal('');
   successMessage = signal('');
+
+  jobCount = computed(() => this.jobs().length);
+  pendingCount = computed(() => this.jobs().filter((job) => job.status === 'pending').length);
+  assignedCount = computed(() => this.jobs().filter((job) => job.status === 'assigned').length);
+  completedCount = computed(() => this.jobs().filter((job) => job.status === 'completed').length);
+  activeAssignments = computed(() => this.jobs().filter((job) => job.assigned_truck && job.assigned_driver).length);
 
   constructor(private api: ApiService) {}
 
@@ -193,13 +199,17 @@ getDriverLabel(value: any): string {
   getStatusClass(status: string): string {
     switch (status) {
       case 'pending':
-        return 'bg-yellow-100 text-yellow-700';
+        return 'badge-amber';
       case 'assigned':
-        return 'bg-blue-100 text-blue-700';
+        return 'badge-blue';
       case 'completed':
-        return 'bg-green-100 text-green-700';
+        return 'badge-green';
       default:
-        return 'bg-gray-100 text-gray-700';
+        return 'badge-slate';
     }
+  }
+
+  formatStatus(status: string): string {
+    return status.replace('_', ' ');
   }
 }

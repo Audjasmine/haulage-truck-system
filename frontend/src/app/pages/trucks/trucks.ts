@@ -1,7 +1,15 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../core/services/api.service';
+
+type TruckRecord = {
+  id: number;
+  truck_id: string;
+  registration_number: string;
+  capacity: string;
+  status: 'available' | 'in_transit' | 'maintenance' | string;
+};
 
 @Component({
   selector: 'app-trucks',
@@ -11,7 +19,7 @@ import { ApiService } from '../../core/services/api.service';
   styleUrl: './trucks.css'
 })
 export class Trucks implements OnInit {
-  trucks = signal<any[]>([]);
+  trucks = signal<TruckRecord[]>([]);
   isLoading = signal(false);
 
   truckForm = {
@@ -24,6 +32,11 @@ export class Trucks implements OnInit {
   editingTruckId: number | null = null;
   errorMessage = signal('');
   successMessage = signal('');
+
+  truckCount = computed(() => this.trucks().length);
+  availableCount = computed(() => this.countByStatus('available'));
+  transitCount = computed(() => this.countByStatus('in_transit'));
+  maintenanceCount = computed(() => this.countByStatus('maintenance'));
 
   constructor(private api: ApiService) {}
 
@@ -83,7 +96,7 @@ export class Trucks implements OnInit {
     }
   }
 
-  editTruck(truck: any): void {
+  editTruck(truck: TruckRecord): void {
     this.editingTruckId = truck.id;
     this.truckForm = {
       truck_id: truck.truck_id,
@@ -131,13 +144,21 @@ export class Trucks implements OnInit {
   getStatusClass(status: string): string {
     switch (status) {
       case 'available':
-        return 'bg-green-100 text-green-700';
+        return 'badge-green';
       case 'in_transit':
-        return 'bg-blue-100 text-blue-700';
+        return 'badge-blue';
       case 'maintenance':
-        return 'bg-yellow-100 text-yellow-700';
+        return 'badge-amber';
       default:
-        return 'bg-gray-100 text-gray-700';
+        return 'badge-slate';
     }
+  }
+
+  formatStatus(status: string): string {
+    return status.replace('_', ' ');
+  }
+
+  private countByStatus(status: string): number {
+    return this.trucks().filter((truck) => truck.status === status).length;
   }
 }

@@ -1,137 +1,135 @@
-<h2 class="text-3xl font-bold mb-6">Trucks Management</h2>
-
-<div class="grid lg:grid-cols-3 gap-6">
-  <div class="lg:col-span-1 bg-white rounded-2xl shadow p-6">
-    <h3 class="text-xl font-semibold mb-4">
-      {{ editingTruckId ? 'Edit Truck' : 'Add Truck' }}
-    </h3>
-
-    <div *ngIf="errorMessage()" class="mb-4 rounded-lg bg-red-100 text-red-700 px-4 py-3">
-      {{ errorMessage() }}
+<section class="screen-shell">
+  <div class="hero-panel">
+    <div>
+      <p class="eyebrow">Fleet Registry</p>
+      <h2 class="screen-title">Truck operations</h2>
+      <p class="screen-copy">
+        Maintain the fleet register, monitor availability, and keep dispatch-ready units separated from trucks in transit or maintenance.
+      </p>
     </div>
-
-    <div *ngIf="successMessage()" class="mb-4 rounded-lg bg-green-100 text-green-700 px-4 py-3">
-      {{ successMessage() }}
-    </div>
-
-    <form (ngSubmit)="submitTruck()" class="space-y-4">
-      <div>
-        <label class="block text-sm font-medium mb-1">Truck ID</label>
-        <input
-          type="text"
-          [(ngModel)]="truckForm.truck_id"
-          name="truck_id"
-          class="w-full border rounded-lg px-3 py-2"
-          required
-        />
-      </div>
-
-      <div>
-        <label class="block text-sm font-medium mb-1">Registration Number</label>
-        <input
-          type="text"
-          [(ngModel)]="truckForm.registration_number"
-          name="registration_number"
-          class="w-full border rounded-lg px-3 py-2"
-          required
-        />
-      </div>
-
-      <div>
-        <label class="block text-sm font-medium mb-1">Capacity</label>
-        <input
-          type="text"
-          [(ngModel)]="truckForm.capacity"
-          name="capacity"
-          class="w-full border rounded-lg px-3 py-2"
-          required
-        />
-      </div>
-
-      <div>
-        <label class="block text-sm font-medium mb-1">Status</label>
-        <select
-          [(ngModel)]="truckForm.status"
-          name="status"
-          class="w-full border rounded-lg px-3 py-2"
-        >
-          <option value="available">Available</option>
-          <option value="in_transit">In Transit</option>
-          <option value="maintenance">Maintenance</option>
-        </select>
-      </div>
-
-      <div class="flex gap-3">
-        <button
-          type="submit"
-          class="bg-slate-900 text-white px-4 py-2 rounded-lg hover:bg-slate-800"
-        >
-          {{ editingTruckId ? 'Update Truck' : 'Add Truck' }}
-        </button>
-
-        <button
-          type="button"
-          (click)="resetForm()"
-          class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300"
-        >
-          Clear
-        </button>
-      </div>
-    </form>
   </div>
 
-  <div class="lg:col-span-2 bg-white rounded-2xl shadow p-6 overflow-x-auto">
-    <h3 class="text-xl font-semibold mb-4">Truck List</h3>
+  <div class="summary-grid">
+    <article class="summary-card summary-primary">
+      <p class="summary-label">Registered Trucks</p>
+      <div class="summary-value">{{ truckCount() }}</div>
+      <p class="summary-copy">Entire fleet tracked in the system.</p>
+    </article>
 
-    <div *ngIf="isLoading()" class="mb-4 rounded-lg bg-gray-100 text-gray-600 px-4 py-3">
-      Loading trucks...
-    </div>
+    <article class="summary-card">
+      <p class="summary-label">Available</p>
+      <div class="summary-value">{{ availableCount() }}</div>
+      <p class="summary-copy">Units ready for assignment.</p>
+    </article>
 
-    <table class="w-full text-sm">
-      <thead>
-        <tr class="border-b text-left">
-          <th class="py-3 pr-3">Truck ID</th>
-          <th class="py-3 pr-3">Registration Number</th>
-          <th class="py-3 pr-3">Capacity</th>
-          <th class="py-3 pr-3">Status</th>
-          <th class="py-3 pr-3">Actions</th>
-        </tr>
-      </thead>
+    <article class="summary-card">
+      <p class="summary-label">In Transit</p>
+      <div class="summary-value">{{ transitCount() }}</div>
+      <p class="summary-copy">Trucks currently committed to work.</p>
+    </article>
 
-      <tbody>
-        <tr *ngFor="let truck of trucks()" class="border-b align-top">
-          <td class="py-3 pr-3">{{ truck.truck_id }}</td>
-          <td class="py-3 pr-3">{{ truck.registration_number }}</td>
-          <td class="py-3 pr-3">{{ truck.capacity }}</td>
-          <td class="py-3 pr-3">
-            <span class="px-3 py-1 rounded-full text-xs font-medium" [ngClass]="getStatusClass(truck.status)">
-              {{ truck.status }}
-            </span>
-          </td>
-          <td class="py-3 pr-3">
-            <div class="flex gap-2 flex-wrap">
-              <button
-                (click)="editTruck(truck)"
-                class="bg-blue-100 text-blue-700 px-3 py-1 rounded-lg hover:bg-blue-200 text-sm"
-              >
-                Edit
-              </button>
-              <button
-                (click)="deleteTruck(truck.id)"
-                class="bg-red-100 text-red-700 px-3 py-1 rounded-lg hover:bg-red-200 text-sm"
-              >
-                Delete
-              </button>
-            </div>
-          </td>
-        </tr>
-
-        <tr *ngIf="!isLoading() && trucks().length === 0">
-          <td colspan="5" class="py-6 text-center text-gray-500">
-            No trucks found.
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <article class="summary-card">
+      <p class="summary-label">Maintenance</p>
+      <div class="summary-value">{{ maintenanceCount() }}</div>
+      <p class="summary-copy">Trucks temporarily out of rotation.</p>
+    </article>
   </div>
-</div>
+
+  <div class="feedback-stack">
+    <div *ngIf="errorMessage()" class="message-banner message-error">{{ errorMessage() }}</div>
+    <div *ngIf="successMessage()" class="message-banner message-success">{{ successMessage() }}</div>
+  </div>
+
+  <div class="content-grid">
+    <section class="form-panel">
+      <div class="panel-header">
+        <div>
+          <p class="panel-kicker">Fleet editor</p>
+          <h3 class="panel-title">{{ editingTruckId ? 'Update truck record' : 'Add new truck' }}</h3>
+        </div>
+      </div>
+
+      <form (ngSubmit)="submitTruck()" class="record-form">
+        <label class="field">
+          <span class="field-label">Truck ID</span>
+          <input type="text" [(ngModel)]="truckForm.truck_id" name="truck_id" class="field-input" required />
+        </label>
+
+        <label class="field">
+          <span class="field-label">Registration Number</span>
+          <input type="text" [(ngModel)]="truckForm.registration_number" name="registration_number" class="field-input" required />
+        </label>
+
+        <label class="field">
+          <span class="field-label">Capacity</span>
+          <input type="text" [(ngModel)]="truckForm.capacity" name="capacity" class="field-input" required />
+        </label>
+
+        <label class="field">
+          <span class="field-label">Status</span>
+          <select [(ngModel)]="truckForm.status" name="status" class="field-input">
+            <option value="available">Available</option>
+            <option value="in_transit">In Transit</option>
+            <option value="maintenance">Maintenance</option>
+          </select>
+        </label>
+
+        <div class="action-row">
+          <button type="submit" class="primary-button">{{ editingTruckId ? 'Save Changes' : 'Create Truck' }}</button>
+          <button type="button" (click)="resetForm()" class="secondary-button">Clear</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="table-panel">
+      <div class="panel-header">
+        <div>
+          <p class="panel-kicker">Fleet list</p>
+          <h3 class="panel-title">Truck register</h3>
+        </div>
+        <span class="panel-chip">{{ truckCount() }} total</span>
+      </div>
+
+      <div *ngIf="isLoading()" class="message-banner message-loading">Loading trucks...</div>
+
+      <div class="table-shell" *ngIf="trucks().length > 0; else emptyTrucks">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Truck</th>
+              <th>Registration</th>
+              <th>Capacity</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let truck of trucks()">
+              <td>{{ truck.truck_id }}</td>
+              <td>{{ truck.registration_number }}</td>
+              <td>{{ truck.capacity }}</td>
+              <td>
+                <span class="status-pill" [ngClass]="getStatusClass(truck.status)">
+                  {{ formatStatus(truck.status) }}
+                </span>
+              </td>
+              <td>
+                <div class="table-actions">
+                  <button (click)="editTruck(truck)" class="table-button edit-button">Edit</button>
+                  <button (click)="deleteTruck(truck.id)" class="table-button delete-button">Delete</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <ng-template #emptyTrucks>
+        <div *ngIf="!isLoading()" class="empty-state">
+          <p class="empty-title">No trucks registered</p>
+          <p class="empty-copy">Start by adding your first truck to build the live fleet registry.</p>
+        </div>
+      </ng-template>
+    </section>
+  </div>
+</section>

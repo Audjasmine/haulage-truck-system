@@ -1,180 +1,169 @@
-<h2 class="text-3xl font-bold mb-6">Jobs Management</h2>
-
-<div class="grid lg:grid-cols-3 gap-6">
-  <div class="lg:col-span-1 bg-white rounded-2xl shadow p-6">
-    <h3 class="text-xl font-semibold mb-4">
-      {{ editingJobId ? 'Edit Job' : 'Add Job' }}
-    </h3>
-
-    <div *ngIf="errorMessage()" class="mb-4 rounded-lg bg-red-100 text-red-700 px-4 py-3">
-      {{ errorMessage() }}
+<section class="screen-shell">
+  <div class="hero-panel">
+    <div>
+      <p class="eyebrow">Dispatch Control</p>
+      <h2 class="screen-title">Job operations</h2>
+      <p class="screen-copy">
+        Coordinate workload, assign trucks and drivers, and keep dispatch status visible from pending jobs through completion.
+      </p>
     </div>
-
-    <div *ngIf="successMessage()" class="mb-4 rounded-lg bg-green-100 text-green-700 px-4 py-3">
-      {{ successMessage() }}
-    </div>
-
-    <form (ngSubmit)="submitJob()" class="space-y-4">
-      <div>
-        <label class="block text-sm font-medium mb-1">Job ID</label>
-        <input
-          type="text"
-          [(ngModel)]="jobForm.job_id"
-          name="job_id"
-          class="w-full border rounded-lg px-3 py-2"
-          required
-        />
-      </div>
-
-      <div>
-        <label class="block text-sm font-medium mb-1">Pickup Location</label>
-        <input
-          type="text"
-          [(ngModel)]="jobForm.pickup_location"
-          name="pickup_location"
-          class="w-full border rounded-lg px-3 py-2"
-          required
-        />
-      </div>
-
-      <div>
-        <label class="block text-sm font-medium mb-1">Delivery Location</label>
-        <input
-          type="text"
-          [(ngModel)]="jobForm.delivery_location"
-          name="delivery_location"
-          class="w-full border rounded-lg px-3 py-2"
-          required
-        />
-      </div>
-
-      <div>
-        <label class="block text-sm font-medium mb-1">Cargo Description</label>
-        <input
-          type="text"
-          [(ngModel)]="jobForm.cargo_description"
-          name="cargo_description"
-          class="w-full border rounded-lg px-3 py-2"
-          required
-        />
-      </div>
-
-      <div>
-        <label class="block text-sm font-medium mb-1">Status</label>
-        <select
-          [(ngModel)]="jobForm.status"
-          name="status"
-          class="w-full border rounded-lg px-3 py-2"
-        >
-          <option value="pending">Pending</option>
-          <option value="assigned">Assigned</option>
-          <option value="completed">Completed</option>
-        </select>
-      </div>
-
-      <div>
-        <label class="block text-sm font-medium mb-1">Assigned Truck</label>
-        <select
-          [(ngModel)]="jobForm.assigned_truck"
-          name="assigned_truck"
-          class="w-full border rounded-lg px-3 py-2"
-        >
-          <option value="">Select Truck</option>
-          <option *ngFor="let truck of trucks()" [value]="truck.id">
-            {{ truck.truck_id }} - {{ truck.registration_number }} ({{ truck.status }})
-          </option>
-        </select>
-      </div>
-
-      <div>
-        <label class="block text-sm font-medium mb-1">Assigned Driver</label>
-        <select
-          [(ngModel)]="jobForm.assigned_driver"
-          name="assigned_driver"
-          class="w-full border rounded-lg px-3 py-2"
-        >
-          <option value="">Select Driver</option>
-          <option *ngFor="let driver of drivers()" [value]="driver.id">
-            {{ driver.driver_id }} - {{ driver.name }}
-          </option>
-        </select>
-      </div>
-
-      <div class="flex gap-3">
-        <button
-          type="submit"
-          class="bg-slate-900 text-white px-4 py-2 rounded-lg hover:bg-slate-800"
-        >
-          {{ editingJobId ? 'Update Job' : 'Add Job' }}
-        </button>
-
-        <button
-          type="button"
-          (click)="resetForm()"
-          class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300"
-        >
-          Clear
-        </button>
-      </div>
-    </form>
   </div>
 
-  <div class="lg:col-span-2 bg-white rounded-2xl shadow p-6 overflow-x-auto">
-    <h3 class="text-xl font-semibold mb-4">Job List</h3>
+  <div class="summary-grid">
+    <article class="summary-card summary-primary">
+      <p class="summary-label">Total Jobs</p>
+      <div class="summary-value">{{ jobCount() }}</div>
+      <p class="summary-copy">All recorded jobs in the dispatch system.</p>
+    </article>
 
-    <div *ngIf="isLoading()" class="mb-4 rounded-lg bg-gray-100 text-gray-600 px-4 py-3">
-      Loading jobs...
-    </div>
+    <article class="summary-card">
+      <p class="summary-label">Pending</p>
+      <div class="summary-value">{{ pendingCount() }}</div>
+      <p class="summary-copy">Jobs waiting for movement decisions.</p>
+    </article>
 
-    <table class="w-full text-sm">
-      <thead>
-        <tr class="border-b text-left">
-          <th class="py-3 pr-3">Job ID</th>
-          <th class="py-3 pr-3">Pickup</th>
-          <th class="py-3 pr-3">Delivery</th>
-          <th class="py-3 pr-3">Truck</th>
-          <th class="py-3 pr-3">Driver</th>
-          <th class="py-3 pr-3">Status</th>
-          <th class="py-3 pr-3">Actions</th>
-        </tr>
-      </thead>
+    <article class="summary-card">
+      <p class="summary-label">Assigned</p>
+      <div class="summary-value">{{ assignedCount() }}</div>
+      <p class="summary-copy">Jobs already tied to active resources.</p>
+    </article>
 
-      <tbody>
-        <tr *ngFor="let job of jobs()" class="border-b align-top">
-          <td class="py-3 pr-3">{{ job.job_id }}</td>
-          <td class="py-3 pr-3">{{ job.pickup_location }}</td>
-          <td class="py-3 pr-3">{{ job.delivery_location }}</td>
-          <td class="py-3 pr-3 break-words">{{ getTruckLabel(job.assigned_truck) }}</td>
-          <td class="py-3 pr-3 break-words">{{ getDriverLabel(job.assigned_driver) }}</td>
-          <td class="py-3 pr-3">
-            <span class="px-3 py-1 rounded-full text-xs font-medium" [ngClass]="getStatusClass(job.status)">
-              {{ job.status }}
-            </span>
-          </td>
-          <td class="py-3 pr-3">
-            <div class="flex gap-2 flex-wrap">
-              <button
-                (click)="editJob(job)"
-                class="bg-blue-100 text-blue-700 px-3 py-1 rounded-lg hover:bg-blue-200 text-sm"
-              >
-                Edit
-              </button>
-              <button
-                (click)="deleteJob(job.id)"
-                class="bg-red-100 text-red-700 px-3 py-1 rounded-lg hover:bg-red-200 text-sm"
-              >
-                Delete
-              </button>
-            </div>
-          </td>
-        </tr>
-
-        <tr *ngIf="!isLoading() && jobs().length === 0">
-          <td colspan="7" class="py-6 text-center text-gray-500">
-            No jobs found.
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <article class="summary-card">
+      <p class="summary-label">Completed</p>
+      <div class="summary-value">{{ completedCount() }}</div>
+      <p class="summary-copy">Closed work completed successfully.</p>
+    </article>
   </div>
-</div>
+
+  <div class="feedback-stack">
+    <div *ngIf="errorMessage()" class="message-banner message-error">{{ errorMessage() }}</div>
+    <div *ngIf="successMessage()" class="message-banner message-success">{{ successMessage() }}</div>
+  </div>
+
+  <div class="content-grid jobs-grid">
+    <section class="form-panel">
+      <div class="panel-header">
+        <div>
+          <p class="panel-kicker">Dispatch editor</p>
+          <h3 class="panel-title">{{ editingJobId ? 'Update job assignment' : 'Create dispatch job' }}</h3>
+        </div>
+        <span class="panel-chip">{{ activeAssignments() }} fully assigned</span>
+      </div>
+
+      <form (ngSubmit)="submitJob()" class="record-form">
+        <label class="field">
+          <span class="field-label">Job ID</span>
+          <input type="text" [(ngModel)]="jobForm.job_id" name="job_id" class="field-input" required />
+        </label>
+
+        <label class="field">
+          <span class="field-label">Pickup Location</span>
+          <input type="text" [(ngModel)]="jobForm.pickup_location" name="pickup_location" class="field-input" required />
+        </label>
+
+        <label class="field">
+          <span class="field-label">Delivery Location</span>
+          <input type="text" [(ngModel)]="jobForm.delivery_location" name="delivery_location" class="field-input" required />
+        </label>
+
+        <label class="field">
+          <span class="field-label">Cargo Description</span>
+          <input type="text" [(ngModel)]="jobForm.cargo_description" name="cargo_description" class="field-input" required />
+        </label>
+
+        <label class="field">
+          <span class="field-label">Status</span>
+          <select [(ngModel)]="jobForm.status" name="status" class="field-input">
+            <option value="pending">Pending</option>
+            <option value="assigned">Assigned</option>
+            <option value="completed">Completed</option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span class="field-label">Assigned Truck</span>
+          <select [(ngModel)]="jobForm.assigned_truck" name="assigned_truck" class="field-input">
+            <option value="">Select Truck</option>
+            <option *ngFor="let truck of trucks()" [value]="truck.id">
+              {{ truck.truck_id }} - {{ truck.registration_number }} ({{ formatStatus(truck.status) }})
+            </option>
+          </select>
+        </label>
+
+        <label class="field">
+          <span class="field-label">Assigned Driver</span>
+          <select [(ngModel)]="jobForm.assigned_driver" name="assigned_driver" class="field-input">
+            <option value="">Select Driver</option>
+            <option *ngFor="let driver of drivers()" [value]="driver.id">
+              {{ driver.driver_id }} - {{ driver.name }}
+            </option>
+          </select>
+        </label>
+
+        <div class="action-row">
+          <button type="submit" class="primary-button">{{ editingJobId ? 'Save Changes' : 'Create Job' }}</button>
+          <button type="button" (click)="resetForm()" class="secondary-button">Clear</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="table-panel">
+      <div class="panel-header">
+        <div>
+          <p class="panel-kicker">Dispatch list</p>
+          <h3 class="panel-title">Current workload</h3>
+        </div>
+        <span class="panel-chip">{{ jobCount() }} total</span>
+      </div>
+
+      <div *ngIf="isLoading()" class="message-banner message-loading">Loading jobs...</div>
+
+      <div class="table-shell" *ngIf="jobs().length > 0; else emptyJobs">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Job</th>
+              <th>Route</th>
+              <th>Truck</th>
+              <th>Driver</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let job of jobs()">
+              <td>
+                <div class="primary-cell">{{ job.job_id }}</div>
+                <div class="secondary-cell">{{ job.cargo_description }}</div>
+              </td>
+              <td>
+                <div class="primary-cell">{{ job.pickup_location }}</div>
+                <div class="secondary-cell">{{ job.delivery_location }}</div>
+              </td>
+              <td>{{ getTruckLabel(job.assigned_truck) }}</td>
+              <td>{{ getDriverLabel(job.assigned_driver) }}</td>
+              <td>
+                <span class="status-pill" [ngClass]="getStatusClass(job.status)">
+                  {{ formatStatus(job.status) }}
+                </span>
+              </td>
+              <td>
+                <div class="table-actions">
+                  <button (click)="editJob(job)" class="table-button edit-button">Edit</button>
+                  <button (click)="deleteJob(job.id)" class="table-button delete-button">Delete</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <ng-template #emptyJobs>
+        <div *ngIf="!isLoading()" class="empty-state">
+          <p class="empty-title">No jobs created</p>
+          <p class="empty-copy">Create your first dispatch job to begin tracking pickups, deliveries, and resource assignments.</p>
+        </div>
+      </ng-template>
+    </section>
+  </div>
+</section>
