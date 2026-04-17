@@ -1,34 +1,231 @@
-<div class="flex justify-between items-center mb-6">
-  <h2 class="text-2xl font-bold text-gray-800">Dashboard</h2>
-  <button
-    (click)="refresh()"
-    [disabled]="isLoading()"
-    class="bg-gray-800 hover:bg-gray-900 disabled:opacity-60 text-white px-4 py-2 rounded-lg transition-colors text-sm">
-    Refresh
-  </button>
-</div>
+<section class="dashboard-shell">
+  <div class="hero-panel">
+    <div>
+      <p class="eyebrow">Operations Overview</p>
+      <h2 class="hero-title">Haulage control board</h2>
+      <p class="hero-copy">
+        Track fleet readiness, dispatch pressure, and the jobs that need intervention before they slow the schedule.
+      </p>
+    </div>
 
-<div *ngIf="errorMessage()" class="mb-4 rounded-lg bg-red-100 text-red-700 px-4 py-3">
-  {{ errorMessage() }}
-</div>
-
-<div *ngIf="isLoading()" class="mb-4 rounded-lg bg-gray-100 text-gray-600 px-4 py-3">
-  Loading dashboard data...
-</div>
-
-<div class="grid md:grid-cols-3 gap-6">
-  <div class="bg-white rounded-lg shadow p-6">
-    <p class="text-gray-500 text-sm">Total Trucks</p>
-    <h3 class="text-3xl font-bold text-gray-800 mt-2">{{ truckCount() }}</h3>
+    <button
+      (click)="refresh()"
+      [disabled]="isLoading()"
+      class="refresh-button">
+      Refresh data
+    </button>
   </div>
 
-  <div class="bg-white rounded-lg shadow p-6">
-    <p class="text-gray-500 text-sm">Total Drivers</p>
-    <h3 class="text-3xl font-bold text-gray-800 mt-2">{{ driverCount() }}</h3>
+  <div *ngIf="errorMessage()" class="message-banner message-error">
+    {{ errorMessage() }}
   </div>
 
-  <div class="bg-white rounded-lg shadow p-6">
-    <p class="text-gray-500 text-sm">Total Jobs</p>
-    <h3 class="text-3xl font-bold text-gray-800 mt-2">{{ jobCount() }}</h3>
+  <div *ngIf="isLoading()" class="message-banner message-loading">
+    Pulling latest fleet and job data...
   </div>
-</div>
+
+  <div class="kpi-grid">
+    <article class="kpi-card kpi-primary">
+      <p class="kpi-label">Fleet Size</p>
+      <div class="kpi-value">{{ truckCount() }}</div>
+      <p class="kpi-meta">{{ availableTruckCount() }} available for dispatch</p>
+    </article>
+
+    <article class="kpi-card">
+      <p class="kpi-label">Active Drivers</p>
+      <div class="kpi-value">{{ activeDriversCount() }}</div>
+      <p class="kpi-meta">{{ driverCount() }} registered drivers in system</p>
+    </article>
+
+    <article class="kpi-card">
+      <p class="kpi-label">Open Workload</p>
+      <div class="kpi-value">{{ pendingJobsCount() + assignedJobsCount() + inTransitJobsCount() }}</div>
+      <p class="kpi-meta">{{ jobCount() }} total jobs on record</p>
+    </article>
+
+    <article class="kpi-card">
+      <p class="kpi-label">Completion Rate</p>
+      <div class="kpi-value">{{ jobCompletionRate() }}%</div>
+      <p class="kpi-meta">{{ completedJobsCount() }} jobs closed successfully</p>
+    </article>
+  </div>
+
+  <div class="insight-grid">
+    <section class="panel-card">
+      <div class="panel-header">
+        <div>
+          <p class="panel-kicker">Fleet health</p>
+          <h3 class="panel-title">Truck status mix</h3>
+        </div>
+        <span class="panel-chip">{{ fleetUtilization() }}% utilized</span>
+      </div>
+
+      <div class="status-group">
+        <div class="status-row">
+          <div>
+            <p class="status-label">Available</p>
+            <p class="status-copy">Ready for new jobs</p>
+          </div>
+          <div class="status-value">{{ availableTruckCount() }}</div>
+        </div>
+        <div class="status-bar">
+          <span class="fill fill-green" [style.width]="statusWidth(availableTruckCount(), truckCount())"></span>
+        </div>
+      </div>
+
+      <div class="status-group">
+        <div class="status-row">
+          <div>
+            <p class="status-label">In Transit</p>
+            <p class="status-copy">Currently allocated to active work</p>
+          </div>
+          <div class="status-value">{{ activeTruckCount() }}</div>
+        </div>
+        <div class="status-bar">
+          <span class="fill fill-blue" [style.width]="statusWidth(activeTruckCount(), truckCount())"></span>
+        </div>
+      </div>
+
+      <div class="status-group">
+        <div class="status-row">
+          <div>
+            <p class="status-label">Maintenance</p>
+            <p class="status-copy">Unavailable until service is completed</p>
+          </div>
+          <div class="status-value">{{ maintenanceTruckCount() }}</div>
+        </div>
+        <div class="status-bar">
+          <span class="fill fill-red" [style.width]="statusWidth(maintenanceTruckCount(), truckCount())"></span>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel-card">
+      <div class="panel-header">
+        <div>
+          <p class="panel-kicker">Job flow</p>
+          <h3 class="panel-title">Dispatch pressure</h3>
+        </div>
+        <span class="panel-chip">{{ assignmentRate() }}% driver coverage</span>
+      </div>
+
+      <div class="metric-pair-grid">
+        <article class="metric-pair">
+          <span class="metric-pair-value">{{ pendingJobsCount() }}</span>
+          <span class="metric-pair-label">Pending</span>
+        </article>
+        <article class="metric-pair">
+          <span class="metric-pair-value">{{ assignedJobsCount() }}</span>
+          <span class="metric-pair-label">Assigned</span>
+        </article>
+        <article class="metric-pair">
+          <span class="metric-pair-value">{{ inTransitJobsCount() }}</span>
+          <span class="metric-pair-label">In Transit</span>
+        </article>
+        <article class="metric-pair">
+          <span class="metric-pair-value">{{ cancelledJobsCount() }}</span>
+          <span class="metric-pair-label">Cancelled</span>
+        </article>
+      </div>
+
+      <div class="narrative-card">
+        <p class="narrative-title">Operational read</p>
+        <p class="narrative-copy">
+          {{ activeTruckCount() }} trucks are active, {{ pendingJobsCount() }} jobs still need dispatch attention,
+          and {{ maintenanceTruckCount() }} units are currently off the road.
+        </p>
+      </div>
+    </section>
+  </div>
+
+  <section class="alert-grid">
+    <article *ngFor="let alert of alertCards()" class="alert-card" [ngClass]="alertToneClass(alert.tone)">
+      <div class="alert-value">{{ alert.value }}</div>
+      <div>
+        <p class="alert-label">{{ alert.label }}</p>
+        <p class="alert-copy">{{ alert.detail }}</p>
+      </div>
+    </article>
+  </section>
+
+  <div class="bottom-grid">
+    <section class="panel-card wide-panel">
+      <div class="panel-header">
+        <div>
+          <p class="panel-kicker">Recent workload</p>
+          <h3 class="panel-title">Latest jobs</h3>
+        </div>
+        <span class="panel-chip">{{ recentJobs().length }} shown</span>
+      </div>
+
+      <div class="table-shell">
+        <table class="jobs-table" *ngIf="recentJobs().length > 0; else noJobs">
+          <thead>
+            <tr>
+              <th>Job</th>
+              <th>Route</th>
+              <th>Truck</th>
+              <th>Driver</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let job of recentJobs()">
+              <td>
+                <div class="job-code">{{ job.job_id }}</div>
+                <div class="job-cargo">{{ job.cargo_description }}</div>
+              </td>
+              <td>
+                <div class="route-stop">{{ job.pickup_location }}</div>
+                <div class="route-arrow">to</div>
+                <div class="route-stop">{{ job.delivery_location }}</div>
+              </td>
+              <td>{{ getTruckLabel(job.assigned_truck) }}</td>
+              <td>{{ getDriverLabel(job.assigned_driver) }}</td>
+              <td>
+                <span class="status-pill" [ngClass]="jobStatusClass(job.status)">
+                  {{ formatStatus(job.status) }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <ng-template #noJobs>
+          <div class="empty-state">
+            <p class="empty-title">No jobs yet</p>
+            <p class="empty-copy">Create jobs to start seeing dispatch activity and operational trends here.</p>
+          </div>
+        </ng-template>
+      </div>
+    </section>
+
+    <section class="panel-card">
+      <div class="panel-header">
+        <div>
+          <p class="panel-kicker">Control metrics</p>
+          <h3 class="panel-title">Today at a glance</h3>
+        </div>
+      </div>
+
+      <div class="summary-stack">
+        <article class="summary-line">
+          <span class="summary-label">Fleet utilization</span>
+          <span class="summary-value">{{ fleetUtilization() }}%</span>
+        </article>
+        <article class="summary-line">
+          <span class="summary-label">Driver coverage</span>
+          <span class="summary-value">{{ assignmentRate() }}%</span>
+        </article>
+        <article class="summary-line">
+          <span class="summary-label">Completed jobs</span>
+          <span class="summary-value">{{ completedJobsCount() }}</span>
+        </article>
+        <article class="summary-line">
+          <span class="summary-label">Jobs in motion</span>
+          <span class="summary-value">{{ assignedJobsCount() + inTransitJobsCount() }}</span>
+        </article>
+      </div>
+    </section>
+  </div>
+</section>
